@@ -22,6 +22,12 @@ class Cell:
     def __eq__(self, other: 'Cell') -> bool:
         return other.row == self.row and other.column == self.column
 
+    def __repr__(self) -> str:
+        return f'Cell({self.row}, {self.column})'
+
+    def __str__(self) -> str:
+        return self.__repr__()
+
     @property
     def neighbours(self) -> List['Cell']:
         return self._neighbours
