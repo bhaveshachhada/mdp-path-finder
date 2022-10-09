@@ -18,7 +18,7 @@ class Environment:
         self.start_position: Tuple[int, int, constants.Direction] = None
         self.goal_position: Tuple[int, int, constants.Direction] = None
         self.n_obstacles: int = None
-        self.obstacle_positions: List[Tuple[int, int]] = None
+        self.obstacle_positions: List[Tuple[int, int]] = list()
 
         self.double_move_probabilities: Dict[constants.Move: float] = None
         self.drift_cw_probabilities: Dict[constants.Move: float] = None
@@ -36,35 +36,46 @@ class Environment:
 
             if line:
 
-                if line.startswith("#"):
+                if line.startswith("#") or line == '\n':
                     continue
 
                 obstacles = list()
                 count = 1
 
                 if self.n_rows is None:
-                    m, n = list(map(int, input().split(',')))
+                    m, n = list(map(int, line.split(',')))
                     self.n_rows, self.n_cols = m, n
 
                 elif self.start_position is None:
-                    m, n = list(map(int, input().split(',')))
+                    m, n, d = list(map(int, line.split(',')))
                     self.start_position = (m, n)
 
                 elif self.goal_position is None:
-                    m, n = list(map(int, input().split(',')))
+                    m, n, d = list(map(int, line.split(',')))
                     self.goal_position = (m, n)
 
                 elif self.n_obstacles is None:
-                    self.n_obstacles = int(input())
+                    self.n_obstacles = int(line)
 
                 elif count < self.n_obstacles:
-                    m, n = list(map(int, input().split(',')))
+                    m, n = list(map(int, line.split(',')))
                     self.obstacle_positions.append((m, n))
 
     def _generate_grid(self):
+        self._grid = list()
         for i in range(self.n_rows):
             row = list()
             for j in range(self.n_cols):
                 cell = Cell(row=i, column=j)
                 row.append(cell)
             self._grid.append(row)
+
+
+def main():
+    filename = 'testcases/ex1.txt'
+    env = Environment(filename=filename)
+    assert env.start_position is not None
+
+
+if __name__ == '__main__':
+    main()
