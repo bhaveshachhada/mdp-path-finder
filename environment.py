@@ -108,6 +108,10 @@ class Environment:
         i, j = self.start_position
         return self._grid[i][j]
 
+    def get_goal_state(self) -> Cell:
+        i, j = self.goal_position
+        return self._grid[i][j]
+
     def apply_dynamics(self, state: Cell, action: constants.Move) -> Tuple[float, Cell]:
         i, j = state.row, state.column
 
