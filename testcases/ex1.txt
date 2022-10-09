@@ -1,0 +1,16 @@
+# m, n = row, columns
+3, 5
+
+# startX, startY, Direction
+0, 0, 0
+
+# goalX, goalY, Direction
+2, 4, 3
+
+# number of obstacles = X
+3
+
+# next X lines, Xi denoting position of obstacle number 'i'
+1, 1
+1, 2
+1, 3
