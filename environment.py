@@ -15,8 +15,8 @@ class Environment:
 
         self._grid: List[List[Cell]] = None
 
-        self.start_position: Tuple[int, int, constants.Direction] = None
-        self.goal_position: Tuple[int, int, constants.Direction] = None
+        self.start_position: Tuple[int, int] = None
+        self.goal_position: Tuple[int, int] = None
         self.n_obstacles: int = None
         self.obstacle_positions: List[Tuple[int, int]] = list()
 
@@ -46,11 +46,11 @@ class Environment:
                     self.n_rows, self.n_cols = m, n
 
                 elif self.start_position is None:
-                    m, n, d = list(map(int, line.split(',')))
+                    m, n = list(map(int, line.split(',')))
                     self.start_position = (m, n)
 
                 elif self.goal_position is None:
-                    m, n, d = list(map(int, line.split(',')))
+                    m, n = list(map(int, line.split(',')))
                     self.goal_position = (m, n)
 
                 elif self.n_obstacles is None:
@@ -87,6 +87,18 @@ class Environment:
                 cell = Cell(row=i, column=j)
                 row.append(cell)
             self._grid.append(row)
+
+    def get_all_states(self) -> List[Cell]:
+        states = list()
+        for i in range(self.n_rows):
+            for j in range(self.n_cols):
+                if (i, j) not in self.obstacle_positions:
+                    states.append(self._grid[i][j])
+        return states
+
+    def get_start_state(self) -> Cell:
+        i, j = self.start_position
+        return self._grid[i][j]
 
 
 def main():
