@@ -108,6 +108,28 @@ class Environment:
         i, j = self.start_position
         return self._grid[i][j]
 
+    def apply_dynamics(self, state: Cell, action: constants.Move) -> Tuple[float, Cell]:
+        i, j = state.row, state.column
+
+        x, y = i, j
+        if action == constants.Move.UP:
+            y = max(0, i - 1)
+        elif action == constants.Move.DOWN:
+            y = min(self.n_rows - 1, i + 1)
+        elif action == constants.Move.LEFT:
+            x = max(0, j - 1)
+        elif action == constants.Move.RIGHT:
+            x = min(self.n_cols - 1, j + 1)
+
+        if (x, y) == self.goal_position:
+            return 100000, Cell(x, y)
+
+        if (x, y) in self.obstacle_positions:
+            return -100000, Cell(x, y)
+
+        else:
+            return -1, Cell(x, y)
+
     def render(self):
         cell_size = (100, 100)
         border_width = 2
