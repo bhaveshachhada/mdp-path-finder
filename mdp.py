@@ -1,6 +1,9 @@
+import math
 from collections import defaultdict
+from typing import Dict, List
 
 import constants
+from cell import Cell
 from environment import Environment
 
 
@@ -12,15 +15,19 @@ class MDPSolver:
 
 class PolicyIterationSolver(MDPSolver):
 
+    GAMMA = -0.1
+
     def __init__(self, environment: Environment):
         MDPSolver.__init__(self, environment)
         self._converged = False
 
-        self._policy = None
-        self._state_space = self.env.get_all_states()
-        self._start_state = self.env.get_start_state()
-        self._state_value = None
-        self._state_transition_probability = None
+        self._policy: Dict[Cell, constants.Move] = None
+        self._state_space: List[Cell] = self.env.get_all_states()
+        self._start_state: Cell = self.env.get_start_state()
+        self._goal_state: Cell = self.env.get_goal_state()
+        self._state_value: Dict[Cell, float] = None
+        self._state_transition_probability: Dict[Cell, Dict[constants.Move, Dict[Cell, float]]] = None
+        self._state_rewards: Dict[Cell, Dict[constants.Move, Dict[Cell, float]]] = None
 
     def initialise(self):
         self._policy = defaultdict(lambda: constants.Move.FORWARD)
@@ -28,12 +35,52 @@ class PolicyIterationSolver(MDPSolver):
         self._calculate_state_transition_probability()
 
     def iterate(self):
-        self.evaluate()
-        self.improvise()
+        while not self.converged:
+            self.evaluate()
+            self.improvise()
 
-    def evaluate(self): ...
+    def calculate_state_value(self, state: Cell):
+        action = self._policy[state]
+        return sum(self._state_transition_probability[state][action][next_state] *
+                   (self._state_rewards[state][action][next_state] +
+                    (self.GAMMA * self._state_value[next_state]))
+                   for next_state in self._state_transition_probability[state][action])
 
-    def improvise(self): ...
+    def evaluate(self):
+        delta_max = math.inf
+        iteration = 0
+        while delta_max > 1e-3:
+            deltas = list()
+            for state in self._state_space:
+                if state == self._goal_state:
+                    continue
+                value_s = self._state_value[state]
+                value_s_prime = self.calculate_state_value(state)
+                delta = abs(value_s - value_s_prime)
+                self._state_value[state] = value_s_prime
+                deltas.append(delta)
+            iteration += 1
+            delta_max = max(deltas)
+            if iteration == 1000:
+                break
+
+    def improvise(self):
+        self._converged = True
+        for state in self._state_space:
+            if state == self._goal_state:
+                continue
+            past_policy_action = self._policy[state]
+            new_policy_action = self.select_best_move_from_state_values(state)
+            if past_policy_action != new_policy_action:
+                self._converged = False
+            self._policy[state] = new_policy_action
+
+    def select_best_move_from_state_values(self, state: Cell):
+        formula = lambda s, action: sum(self._state_transition_probability[s][action][next_state] *
+                                        (self._state_rewards[next_state] +
+                                         (self.GAMMA * self._state_value[next_state]))
+                                        for next_state in self._state_transition_probability[s][action])
+        return max(list(constants.Move), key=lambda x: formula(state, x))
 
     @property
     def converged(self) -> bool:
@@ -41,9 +88,13 @@ class PolicyIterationSolver(MDPSolver):
 
     def _calculate_state_transition_probability(self):
         self._state_transition_probability = dict()
+        self._state_rewards = dict()
         for state in self._state_space:
             self._state_transition_probability[state] = dict()
+            self._state_rewards = dict()
             for action in constants.Move:
                 self._state_transition_probability[state][action] = defaultdict(lambda: 0.0)
-                _, new_state = self.env.apply_dynamics(state, action)
+                self._state_rewards[state][action] = defaultdict(lambda: 0.0)
+                reward, new_state = self.env.apply_dynamics(state, action)
                 self._state_transition_probability[state][action][new_state] = 1.0
+                self._state_rewards[state][action][new_state] = reward
