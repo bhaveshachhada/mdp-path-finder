@@ -5,8 +5,8 @@ from enum import Enum, unique
 class Move(Enum):
     FORWARD = 1
     BACKWARD = 2
-    SPIN_RIGHT = 3
-    SPIN_LEFT = 4
+    RIGHT = 3
+    LEFT = 4
 
 
 @unique
@@ -20,6 +20,6 @@ class Direction(Enum):
 ACTION_BASE_COST = {
     Move.FORWARD: 1.0,
     Move.BACKWARD: 1.0,
-    Move.SPIN_LEFT: 1.0,
-    Move.SPIN_RIGHT: 1.0
+    Move.LEFT: 1.0,
+    Move.RIGHT: 1.0
 }
