@@ -14,3 +14,12 @@
 1, 1
 1, 2
 1, 3
+
+# double move probabilities
+0.0, 0.0, 0.0, 0.0
+
+# drift cw probabilities
+0.0, 0.0, 0.0, 0.0
+
+# drift ccw probabilities
+0.0, 0.0, 0.0, 0.0

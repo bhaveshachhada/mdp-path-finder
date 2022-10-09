@@ -32,14 +32,14 @@ class Environment:
     def _read_environment_config(self):
         f = open(self._filename, 'r')
 
+        count = 1
+
         for line in f:
 
             if line:
 
                 if line.startswith("#") or line == '\n':
                     continue
-
-                count = 1
 
                 if self.n_rows is None:
                     m, n = list(map(int, line.split(',')))
@@ -59,6 +59,25 @@ class Environment:
                 elif count < self.n_obstacles:
                     m, n = list(map(int, line.split(',')))
                     self.obstacle_positions.append((m, n))
+                    count += 1
+
+                elif self.double_move_probabilities is None:
+                    self.double_move_probabilities = dict()
+                    probs = list(map(float, line.split(',')))
+                    for key, value in zip(constants.Move, probs):
+                        self.double_move_probabilities[key] = value
+
+                elif self.drift_cw_probabilities is None:
+                    self.drift_cw_probabilities = dict()
+                    probs = list(map(float, line.split(',')))
+                    for key, value in zip(constants.Move, probs):
+                        self.drift_cw_probabilities[key] = value
+
+                elif self.drift_ccw_probabilities is None:
+                    self.drift_ccw_probabilities = dict()
+                    probs = list(map(float, line.split(',')))
+                    for key, value in zip(constants.Move, probs):
+                        self.drift_ccw_probabilities[key] = value
 
     def _generate_grid(self):
         self._grid = list()
@@ -74,6 +93,8 @@ def main():
     filename = 'testcases/ex1.txt'
     env = Environment(filename=filename)
     assert env.start_position is not None
+    assert env.drift_ccw_probabilities is not None
+    assert env.drift_cw_probabilities is not None
 
 
 if __name__ == '__main__':
