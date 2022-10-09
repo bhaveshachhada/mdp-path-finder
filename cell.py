@@ -33,4 +33,5 @@ class Cell:
         return self._neighbours
 
     def add_neighbour(self, cell: 'Cell'):
-        self._neighbours.append(cell)
+        if cell not in self._neighbours:
+            self._neighbours.append(cell)
