@@ -9,6 +9,14 @@ class Move(Enum):
     SPIN_LEFT = 4
 
 
+@unique
+class Direction(Enum):
+    NORTH = 0
+    EAST = 1
+    SOUTH = 2
+    WEST = 3
+
+
 ACTION_BASE_COST = {
     Move.FORWARD: 1.0,
     Move.BACKWARD: 1.0,
