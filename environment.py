@@ -39,7 +39,6 @@ class Environment:
                 if line.startswith("#") or line == '\n':
                     continue
 
-                obstacles = list()
                 count = 1
 
                 if self.n_rows is None:
