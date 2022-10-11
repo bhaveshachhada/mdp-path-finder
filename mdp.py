@@ -1,4 +1,5 @@
 import math
+import time
 from collections import defaultdict
 from typing import Dict, List
 
@@ -17,7 +18,6 @@ class MDPSolver:
 
 
 class PolicyIterationSolver(MDPSolver):
-
     GAMMA = -0.1
 
     def __init__(self, environment: Environment):
@@ -33,16 +33,18 @@ class PolicyIterationSolver(MDPSolver):
         self._state_rewards: Dict[Cell, Dict[constants.Move, Dict[Cell, float]]] = None
 
         self._image = None
+        cv2.namedWindow('output', cv2.WINDOW_NORMAL)
+        self.initialise()
 
     def initialise(self):
-        self._policy = defaultdict(lambda: constants.Move.FORWARD)
+        self._policy = defaultdict(lambda: constants.Move.UP)
         self._state_value = defaultdict(lambda: 0.0)
         self._calculate_state_transition_probability()
 
     def iterate(self):
-        while not self.converged:
-            self.evaluate()
-            self.improvise()
+        # while not self.converged:
+        self.evaluate()
+        self.improvise()
 
     def calculate_state_value(self, state: Cell):
         action = self._policy[state]
@@ -82,7 +84,7 @@ class PolicyIterationSolver(MDPSolver):
 
     def select_best_move_from_state_values(self, state: Cell):
         formula = lambda s, action: sum(self._state_transition_probability[s][action][next_state] *
-                                        (self._state_rewards[next_state] +
+                                        (self._state_rewards[state][action][next_state] +
                                          (self.GAMMA * self._state_value[next_state]))
                                         for next_state in self._state_transition_probability[s][action])
         return max(list(constants.Move), key=lambda x: formula(state, x))
@@ -96,7 +98,7 @@ class PolicyIterationSolver(MDPSolver):
         self._state_rewards = dict()
         for state in self._state_space:
             self._state_transition_probability[state] = dict()
-            self._state_rewards = dict()
+            self._state_rewards[state] = dict()
             for action in constants.Move:
                 self._state_transition_probability[state][action] = defaultdict(lambda: 0.0)
                 self._state_rewards[state][action] = defaultdict(lambda: 0.0)
@@ -131,10 +133,14 @@ class PolicyIterationSolver(MDPSolver):
                 if (i, j) == self.env.agent_position:
                     cv2.circle(cell_image,
                                (cell_size[0] // 2, cell_size[1] // 2),
-                               min(cell_size) // 4,
+                               min(cell_size) // 5,
                                (255, 20, 20),
                                -1)
 
+                if (i, j) not in self.env.obstacle_positions:
+                    text = f'{round(self._state_value[Cell(i, j)], 4)}'
+                    org = (int(0.35 * cell_size[1]), cell_size[0] - 4)
+                    cv2.putText(cell_image, text, org, cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
                 if j == 0:
                     row_image = cell_image
                 else:
@@ -144,6 +150,19 @@ class PolicyIterationSolver(MDPSolver):
             else:
                 self._image = np.vstack((self._image, row_image))
         self._image = self._image.astype(np.uint8)
-        print(f'{self._image.dtype}, {self._image.shape}')
+        # print(f'{self._image.dtype}, {self._image.shape}')
         cv2.imshow('output', self._image)
-        cv2.waitKey(0)
+        # time.sleep(0.1)
+        cv2.waitKey(1)
+
+
+def main():
+    environment = Environment(filename="testcases/ex1.txt")
+    solver = PolicyIterationSolver(environment)
+    while not solver.converged:
+        solver.iterate()
+        solver.render()
+        time.sleep(1)
+
+if __name__ == '__main__':
+    main()
