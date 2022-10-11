@@ -18,7 +18,7 @@ class MDPSolver:
 
 
 class PolicyIterationSolver(MDPSolver):
-    GAMMA = -0.1
+    GAMMA = 0.1
 
     def __init__(self, environment: Environment):
         MDPSolver.__init__(self, environment)
@@ -35,10 +35,13 @@ class PolicyIterationSolver(MDPSolver):
         self._image = None
         cv2.namedWindow('output', cv2.WINDOW_NORMAL)
         self.initialise()
+        self.solution = None
 
     def initialise(self):
         self._policy = defaultdict(lambda: constants.Move.UP)
         self._state_value = defaultdict(lambda: 0.0)
+        goal_state = self.env.get_goal_state()
+        self._state_value[goal_state] = 200.0
         self._calculate_state_transition_probability()
 
     def iterate(self):
@@ -68,6 +71,8 @@ class PolicyIterationSolver(MDPSolver):
                 deltas.append(delta)
             iteration += 1
             delta_max = max(deltas)
+            self.render()
+            time.sleep(0.1)
             if iteration == 1000:
                 break
 
@@ -104,11 +109,26 @@ class PolicyIterationSolver(MDPSolver):
                 self._state_rewards[state][action] = defaultdict(lambda: 0.0)
                 reward, new_state = self.env.apply_dynamics(state, action)
                 self._state_transition_probability[state][action][new_state] = 1.0
+                print(f'State: {state}, Action: {action.name}, New State: {new_state}, reward: {reward}')
                 self._state_rewards[state][action][new_state] = reward
 
+    def get_best_action_for_state(self, state: Cell):
+        return self._policy[state]
+
+    def generate_solution(self):
+        self.solution = list()
+        current = self.env.get_start_state()
+        while current != self.env.get_goal_state():
+            self.solution.append((current.row, current.column))
+            action = self.get_best_action_for_state(current)
+            _, next_state = self.env.apply_dynamics(current, action)
+            current = next_state
+        self.solution.append((current.row, current.column))
+        return self.solution
+
     def render(self):
-        cell_size = (100, 100)
-        border_width = 2
+        cell_size = (150, 150)
+        border_width = 2 if self.solution is None else 4
         self._image = np.zeros((*cell_size, 3), dtype=np.uint8)
         for i in range(self.env.n_rows):
             row_image = None
@@ -116,7 +136,7 @@ class PolicyIterationSolver(MDPSolver):
                 if (i, j) == self.env.start_position:
                     R, G, B = 200, 20, 20
                 elif (i, j) == self.env.goal_position:
-                    R, G, B = 20, 200, 20
+                    R, G, B = 200, 200, 20
                 elif (i, j) in self.env.obstacle_positions:
                     R, G, B = 20, 20, 20
                 else:
@@ -125,10 +145,16 @@ class PolicyIterationSolver(MDPSolver):
                 g = np.full(cell_size, G)
                 r = np.full(cell_size, R)
                 cell_image = cv2.merge((b, g, r))
-                cell_image[:, :border_width, :] = (255, 255, 255)
-                cell_image[:border_width, :, :] = (255, 255, 255)
-                cell_image[-border_width:, :, :] = (255, 255, 255)
-                cell_image[:, -border_width:, :] = (255, 255, 255)
+
+                if self.solution is not None and (i, j) in self.solution:
+                    border_color = (0, 255, 0)
+                else:
+                    border_color = (255, 255, 255)
+
+                cell_image[:, :border_width, :] = border_color
+                cell_image[:border_width, :, :] = border_color
+                cell_image[-border_width:, :, :] = border_color
+                cell_image[:, -border_width:, :] = border_color
 
                 if (i, j) == self.env.agent_position:
                     cv2.circle(cell_image,
@@ -139,8 +165,8 @@ class PolicyIterationSolver(MDPSolver):
 
                 if (i, j) not in self.env.obstacle_positions:
                     text = f'{round(self._state_value[Cell(i, j)], 4)}'
-                    org = (int(0.35 * cell_size[1]), cell_size[0] - 4)
-                    cv2.putText(cell_image, text, org, cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
+                    org = (int(0.1 * cell_size[1]), cell_size[0] - 4)
+                    cv2.putText(cell_image, text, org, cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 0), 2)
                 if j == 0:
                     row_image = cell_image
                 else:
@@ -153,16 +179,20 @@ class PolicyIterationSolver(MDPSolver):
         # print(f'{self._image.dtype}, {self._image.shape}')
         cv2.imshow('output', self._image)
         # time.sleep(0.1)
-        cv2.waitKey(1)
+        cv2.waitKey(1000)
 
 
 def main():
-    environment = Environment(filename="testcases/ex1.txt")
+    environment = Environment(filename="testcases/ex3.txt")
     solver = PolicyIterationSolver(environment)
     while not solver.converged:
         solver.iterate()
         solver.render()
         time.sleep(1)
+    solver.generate_solution()
+    solver.render()
+    cv2.waitKey(0)
+
 
 if __name__ == '__main__':
     main()
