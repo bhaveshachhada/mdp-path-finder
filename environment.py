@@ -122,7 +122,7 @@ class Environment:
     def apply_dynamics(self, state: Cell, action: constants.Move) -> Tuple[float, Cell]:
         i, j = state.row, state.column
 
-        x, y = i, j
+        y, x = i, j
         if action == constants.Move.UP:
             y = max(0, i - 1)
         elif action == constants.Move.DOWN:
@@ -132,14 +132,14 @@ class Environment:
         elif action == constants.Move.RIGHT:
             x = min(self.n_cols - 1, j + 1)
 
-        if (x, y) == self.goal_position:
-            return 100000, Cell(x, y)
+        if (y, x) == self.goal_position:
+            return 100000, Cell(y, x)
 
-        if (x, y) in self.obstacle_positions:
-            return -100000, Cell(x, y)
+        if (y, x) in self.obstacle_positions:
+            return -100000, Cell(y, x)
 
         else:
-            return -manhattan((x, y), self.goal_position), Cell(x, y)
+            return -manhattan((y, x), self.goal_position), Cell(y, x)
 
 
 def main():
@@ -148,7 +148,7 @@ def main():
     assert env.start_position is not None
     assert env.drift_ccw_probabilities is not None
     assert env.drift_cw_probabilities is not None
-    env.render()
+    # env.render()
 
 
 if __name__ == '__main__':
