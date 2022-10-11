@@ -2,6 +2,9 @@ import math
 from collections import defaultdict
 from typing import Dict, List
 
+import cv2
+import numpy as np
+
 import constants
 from cell import Cell
 from environment import Environment
@@ -28,6 +31,8 @@ class PolicyIterationSolver(MDPSolver):
         self._state_value: Dict[Cell, float] = None
         self._state_transition_probability: Dict[Cell, Dict[constants.Move, Dict[Cell, float]]] = None
         self._state_rewards: Dict[Cell, Dict[constants.Move, Dict[Cell, float]]] = None
+
+        self._image = None
 
     def initialise(self):
         self._policy = defaultdict(lambda: constants.Move.FORWARD)
@@ -98,3 +103,47 @@ class PolicyIterationSolver(MDPSolver):
                 reward, new_state = self.env.apply_dynamics(state, action)
                 self._state_transition_probability[state][action][new_state] = 1.0
                 self._state_rewards[state][action][new_state] = reward
+
+    def render(self):
+        cell_size = (100, 100)
+        border_width = 2
+        self._image = np.zeros((*cell_size, 3), dtype=np.uint8)
+        for i in range(self.env.n_rows):
+            row_image = None
+            for j in range(self.env.n_cols):
+                if (i, j) == self.env.start_position:
+                    R, G, B = 200, 20, 20
+                elif (i, j) == self.env.goal_position:
+                    R, G, B = 20, 200, 20
+                elif (i, j) in self.env.obstacle_positions:
+                    R, G, B = 20, 20, 20
+                else:
+                    R, G, B = 128, 128, 128
+                b = np.full(cell_size, B)
+                g = np.full(cell_size, G)
+                r = np.full(cell_size, R)
+                cell_image = cv2.merge((b, g, r))
+                cell_image[:, :border_width, :] = (255, 255, 255)
+                cell_image[:border_width, :, :] = (255, 255, 255)
+                cell_image[-border_width:, :, :] = (255, 255, 255)
+                cell_image[:, -border_width:, :] = (255, 255, 255)
+
+                if (i, j) == self.env.agent_position:
+                    cv2.circle(cell_image,
+                               (cell_size[0] // 2, cell_size[1] // 2),
+                               min(cell_size) // 4,
+                               (255, 20, 20),
+                               -1)
+
+                if j == 0:
+                    row_image = cell_image
+                else:
+                    row_image = np.hstack((row_image, cell_image))
+            if i == 0:
+                self._image = row_image
+            else:
+                self._image = np.vstack((self._image, row_image))
+        self._image = self._image.astype(np.uint8)
+        print(f'{self._image.dtype}, {self._image.shape}')
+        cv2.imshow('output', self._image)
+        cv2.waitKey(0)
