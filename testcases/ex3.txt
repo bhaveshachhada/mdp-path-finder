@@ -2,10 +2,10 @@
 5, 5
 
 # startX, startY, Direction
-0, 0
+1, 2
 
 # goalX, goalY, Direction
-4, 4
+3, 2
 
 # number of obstacles = X
 7
