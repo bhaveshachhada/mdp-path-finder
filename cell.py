@@ -35,3 +35,11 @@ class Cell:
     def add_neighbour(self, cell: 'Cell'):
         if cell not in self._neighbours:
             self._neighbours.append(cell)
+
+    def distance(self, other: 'Cell', method='manhattan') -> float:
+        if method == 'manhattan':
+            return float(abs(self.row - other.row) + abs(self.column - other.column))
+        elif method == 'euclidean':
+            return ((self.row - other.row) ** 2 + (self.column - other.column) ** 2) ** 0.5
+        else:
+            raise NotImplementedError
