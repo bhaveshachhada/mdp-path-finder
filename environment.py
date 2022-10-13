@@ -132,7 +132,7 @@ class Environment:
             return -100, Cell(y, x)
 
         else:
-            return -Cell(y, x).distance(self.get_goal_state())
+            return -Cell(y, x).distance(self.get_goal_state()), Cell(y, x)
 
 
 def main():
