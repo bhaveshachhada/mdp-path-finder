@@ -133,7 +133,7 @@ class Environment:
             x = min(self.n_cols - 1, j + 1)
 
         if (y, x) == self.goal_position:
-            return 100, Cell(y, x)
+            return 1, Cell(y, x)
 
         if (y, x) in self.obstacle_positions:
             return -100, Cell(y, x)
