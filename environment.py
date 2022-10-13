@@ -7,13 +7,6 @@ import constants
 from cell import Cell
 
 
-def manhattan(pt1, pt2):
-    distance = 0
-    for a, b in zip(pt1, pt2):
-        distance += abs(a - b)
-    return distance
-
-
 class Environment:
 
     def __init__(self, filename):
@@ -139,7 +132,7 @@ class Environment:
             return -100, Cell(y, x)
 
         else:
-            return -manhattan((y, x), self.goal_position), Cell(y, x)
+            return -Cell(y, x).distance(self.get_goal_state())
 
 
 def main():
