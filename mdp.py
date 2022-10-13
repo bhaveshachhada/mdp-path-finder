@@ -1,5 +1,4 @@
 import math
-import time
 from collections import defaultdict
 from typing import Dict, List
 
@@ -18,7 +17,7 @@ class MDPSolver:
 
 
 class PolicyIterationSolver(MDPSolver):
-    GAMMA = 0.1
+    GAMMA = 0.9
 
     def __init__(self, environment: Environment):
         MDPSolver.__init__(self, environment)
@@ -41,6 +40,9 @@ class PolicyIterationSolver(MDPSolver):
         self._policy = defaultdict(lambda: constants.Move.UP)
         self._state_value = defaultdict(lambda: 0.0)
         goal_state = self.env.get_goal_state()
+        for state in self.env.get_all_states():
+            if state == goal_state:
+                self._state_value[state] = -goal_state.distance(state)
         self._state_value[goal_state] = 200.0
         self._calculate_state_transition_probability()
 
@@ -72,7 +74,7 @@ class PolicyIterationSolver(MDPSolver):
             iteration += 1
             delta_max = max(deltas)
             self.render()
-            time.sleep(0.1)
+            # time.sleep(5)
             if iteration == 1000:
                 break
 
@@ -188,7 +190,7 @@ def main():
     while not solver.converged:
         solver.iterate()
         solver.render()
-        time.sleep(1)
+        # time.sleep(5)
     solver.generate_solution()
     solver.render()
     cv2.waitKey(0)
