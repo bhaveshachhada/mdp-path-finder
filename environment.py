@@ -1,8 +1,5 @@
 from typing import Dict, List, Tuple
 
-import cv2
-import numpy as np
-
 import constants
 from cell import Cell
 
