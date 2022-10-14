@@ -139,7 +139,9 @@ class Environment:
             return -100, Cell(y, x)
 
         else:
-            return -manhattan((y, x), self.goal_position), Cell(y, x)
+            goal = self.get_goal_state()
+            next_state = Cell(y, x)
+            return state.distance(goal) - next_state.distance(goal), next_state
 
 
 def main():
