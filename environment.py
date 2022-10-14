@@ -136,7 +136,7 @@ class Environment:
             return 100, Cell(y, x)
 
         if (y, x) in self.obstacle_positions:
-            return -100, Cell(y, x)
+            return -10, Cell(y, x)
 
         else:
             goal = self.get_goal_state()
