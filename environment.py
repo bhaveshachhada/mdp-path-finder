@@ -123,25 +123,40 @@ class Environment:
         i, j = state.row, state.column
 
         y, x = i, j
+
+        reward = 0
+        hazard_penalty = -100
+
         if action == constants.Move.UP:
+            if i - 1 < 0:
+                reward += hazard_penalty
             y = max(0, i - 1)
         elif action == constants.Move.DOWN:
             y = min(self.n_rows - 1, i + 1)
+            if i + 1 >= self.n_rows:
+                reward += hazard_penalty
         elif action == constants.Move.LEFT:
             x = max(0, j - 1)
+            if j - 1 < 0:
+                reward += hazard_penalty
         elif action == constants.Move.RIGHT:
             x = min(self.n_cols - 1, j + 1)
+            if j + 1 >= self.n_cols:
+                reward += hazard_penalty
 
         if (y, x) == self.goal_position:
-            return 100, Cell(y, x)
+            return 10000, Cell(y, x)
 
         if (y, x) in self.obstacle_positions:
-            return -10, Cell(y, x)
+            # return hazard_penalty, Cell(y, x)
+            reward += hazard_penalty
 
-        else:
-            goal = self.get_goal_state()
-            next_state = Cell(y, x)
-            return state.distance(goal) - next_state.distance(goal), next_state
+        # else:
+        goal = self.get_goal_state()
+        next_state = Cell(y, x)
+        # reward += state.distance(goal) - next_state.distance(goal)
+        return reward, next_state
+
 
 
 def main():
