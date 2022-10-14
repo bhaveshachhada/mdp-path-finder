@@ -62,8 +62,8 @@ class PolicyIterationSolver(MDPSolver):
         while delta_max > 1e-3:
             deltas = list()
             for state in self._state_space:
-                if state == self._goal_state:
-                    continue
+                # if state == self._goal_state:
+                #     continue
                 value_s = self._state_value[state]
                 value_s_prime = self.calculate_state_value(state)
                 delta = abs(value_s - value_s_prime)
@@ -72,7 +72,7 @@ class PolicyIterationSolver(MDPSolver):
             iteration += 1
             delta_max = max(deltas)
             self.render()
-            time.sleep(0.1)
+            # time.sleep(0.1)
             if iteration == 1000:
                 break
 
@@ -188,7 +188,7 @@ def main():
     while not solver.converged:
         solver.iterate()
         solver.render()
-        time.sleep(1)
+        # time.sleep(1)
     solver.generate_solution()
     solver.render()
     cv2.waitKey(0)
