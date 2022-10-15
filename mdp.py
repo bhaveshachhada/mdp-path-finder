@@ -179,7 +179,7 @@ class PolicyIterationSolver(MDPSolver):
         # print(f'{self._image.dtype}, {self._image.shape}')
         cv2.imshow('output', self._image)
         # time.sleep(0.1)
-        cv2.waitKey(1000)
+        cv2.waitKey(1)
 
 
 def main():
