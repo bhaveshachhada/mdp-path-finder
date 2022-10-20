@@ -1,3 +1,4 @@
+import argparse
 import math
 import time
 from collections import defaultdict
@@ -182,8 +183,8 @@ class PolicyIterationSolver(MDPSolver):
         cv2.waitKey(1)
 
 
-def main():
-    environment = Environment(filename="testcases/ex3.txt")
+def main(testcase_number: int):
+    environment = Environment(filename=f"testcases/ex{testcase_number}.txt")
     solver = PolicyIterationSolver(environment)
     while not solver.converged:
         solver.iterate()
@@ -195,4 +196,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(prog="mapf")
+    parser.add_argument('-t', '--testcase-number', default=1)
+    args = parser.parse_args()
+    main(args.testcase_number)
